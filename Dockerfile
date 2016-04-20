@@ -33,8 +33,8 @@ RUN mkdir -p /opt/app-root/httpd/logs
 RUN $STI_SCRIPTS_PATH/assemble
     
 
-ENV APACHE_RUN_USER 1001 \
-    APACHE_RUN_GROUP 1001 \
-    APACHE_PID_FILE /opt/app-root/httpd.pid 
+ENV APACHE_RUN_USER 1001 
+ENV APACHE_RUN_GROUP 1001
+ENV APACHE_PID_FILE /opt/app-root/httpd.pid 
 
 CMD /usr/sbin/apachectl -DFOREGROUND
