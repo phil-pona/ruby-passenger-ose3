@@ -21,12 +21,16 @@ ADD httpd /etc/httpd
 # disable digest_module
 RUN sed -i "s/LoadModule auth_digest_module/#LoadModule auth_digest_module/" /etc/httpd/conf.modules.d/00-base.conf
 
-RUN mkdir -p /opt/app-root/httpd/logs
+RUN mkdir -p /opt/app-root/httpd/logs && \
+    mkdir -p /opt/app-root/httpd/pid
 
 RUN chgrp -R 0 ./ && \
     chmod -R g+rw ./ && \
     find ./ -type d -exec chmod g+x {} + && \
     chown -R 1001:0 ./
+
+RUN chmod -R a+rwX /opt/app-root/httpd/logs && \
+    chmod -R a+rwX /opt/app-root/httpd/pid
 
 USER 1001
 
@@ -36,4 +40,4 @@ RUN $STI_SCRIPTS_PATH/assemble
 ENV APACHE_RUN_USER 1001 
 ENV APACHE_PID_FILE /opt/app-root/httpd.pid 
 
-CMD export APACHE_RUN_USER=$(id -u) && /usr/sbin/apachectl -DFOREGROUND
+CMD export APACHE_RUN_USER=$(id -u) && /usr/sbin/apachectl -DFOREGROUND 
