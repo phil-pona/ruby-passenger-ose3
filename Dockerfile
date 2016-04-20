@@ -37,4 +37,4 @@ ENV APACHE_RUN_USER 1001
 ENV APACHE_RUN_GROUP 1001
 ENV APACHE_PID_FILE /opt/app-root/httpd.pid 
 
-CMD export APACHE_RUN_USER=$(id -u) && export APACHE_RUN_USER=$(id -g) && /usr/sbin/apachectl -DFOREGROUND
+CMD export APACHE_RUN_USER=$(id -u) && export APACHE_RUN_GROUP='apache' && /usr/sbin/apachectl -DFOREGROUND
