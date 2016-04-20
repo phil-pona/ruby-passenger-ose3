@@ -10,7 +10,7 @@ RUN yum update -y && \
 RUN /bin/bash -c "gem install passenger --no-ri --no-rdoc && \
     export PATH=$PATH:/opt/rh/rh-ruby22/root/usr/local/bin && \
     passenger-install-apache2-module --auto --languages ruby && \
-    passenger-config validate-install"
+    passenger-config validate-install "
 
 ENV RAILS_ENV=production \
     RAILS_ROOT=/opt/app-root/src
