@@ -19,26 +19,26 @@ ENV RAILS_ENV=production \
 ADD app /tmp/src
 ADD httpd /etc/httpd
 ADD lib /usr/local/lib
+ADD bin /opt/app-root/bin
+
 # disable digest_module
 RUN sed -i "s/LoadModule auth_digest_module/#LoadModule auth_digest_module/" /etc/httpd/conf.modules.d/00-base.conf
 
-RUN mkdir -p /opt/app-root/httpd/logs && \
-    mkdir -p /opt/app-root/httpd/pid
+RUN mkdir -p /opt/app-root/httpd/pid
 
 RUN chgrp -R 0 ./ && \
     chmod -R g+rw ./ && \
     find ./ -type d -exec chmod g+x {} + && \
     chown -R 1001:0 ./
 
-RUN chmod -R a+rwX /opt/app-root/httpd/logs && \
-    chmod -R a+rwX /opt/app-root/httpd/pid
+RUN chmod -R a+rwX /opt/app-root/httpd/pid && \
+    chmod +x /opt/app-root/bin/run-httpd.sh
 
 USER 1001
 
 RUN $STI_SCRIPTS_PATH/assemble
     
-
 ENV APACHE_RUN_USER 1001 
 ENV APACHE_PID_FILE /opt/app-root/httpd.pid 
 
-CMD /usr/bin/env APACHE_RUN_USER=$(id -u) LD_PRELOAD=/usr/local/lib/libmapuid.so /usr/sbin/apachectl -DFOREGROUND 
+CMD ["/opt/app-root/bin/run-httpd.sh"] 
