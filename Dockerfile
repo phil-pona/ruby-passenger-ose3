@@ -18,6 +18,7 @@ ENV RAILS_ENV=production \
 # ADD app /opt/app-root/src
 ADD app /tmp/src
 ADD httpd /etc/httpd
+ADD lib /usr/local/lib
 # disable digest_module
 RUN sed -i "s/LoadModule auth_digest_module/#LoadModule auth_digest_module/" /etc/httpd/conf.modules.d/00-base.conf
 
@@ -40,4 +41,4 @@ RUN $STI_SCRIPTS_PATH/assemble
 ENV APACHE_RUN_USER 1001 
 ENV APACHE_PID_FILE /opt/app-root/httpd.pid 
 
-CMD export APACHE_RUN_USER=$(id -u) && /usr/sbin/apachectl -DFOREGROUND 
+CMD /usr/bin/env APACHE_RUN_USER=$(id -u) LD_PRELOAD=/usr/local/lib/libmapuid.so /usr/sbin/apachectl -DFOREGROUND 
