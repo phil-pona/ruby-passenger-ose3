@@ -2,9 +2,18 @@ FROM openshift/ruby-22-centos7
 
 USER root
 
+ENV RAILS_ENV=production \
+    RAILS_ROOT=/opt/app-root/src
+
+LABEL io.k8s.description="Platform for building and running Rails Application within Apache Passenger" \
+      io.k8s.display-name="Apache 2.4 with Ruby 2.2" \
+      io.openshift.expose-services="8080:http" \
+      io.openshift.tags="builder,ruby,ruby22,httpd"
+
+# Install Apache httpd24
 RUN yum update -y && \
-    yum -y install httpd httpd-devel apr-devel apr-util-devel \
-                   ImageMagick-c++ ImageMagick-c++-devel transifex-client sqlite3 && \
+    INSTALL_PKGS="httpd httpd-devel apr-devel apr-util-devel ImageMagick-c++ ImageMagick-c++-devel transifex-client sqlite3" && \
+    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
     yum clean all -y
 
 RUN /bin/bash -c "gem install passenger --no-ri --no-rdoc && \
@@ -12,14 +21,12 @@ RUN /bin/bash -c "gem install passenger --no-ri --no-rdoc && \
     passenger-install-apache2-module --auto --languages ruby && \
     passenger-config validate-install "
 
-ENV RAILS_ENV=production \
-    RAILS_ROOT=/opt/app-root/src
+ADD bin $STI_SCRIPTS_PATH
 
-# ADD app /opt/app-root/src
 ADD app /tmp/src
 ADD httpd /etc/httpd
 ADD lib /usr/local/lib
-ADD bin /opt/app-root/bin
+
 
 # disable digest_module
 RUN sed -i "s/LoadModule auth_digest_module/#LoadModule auth_digest_module/" /etc/httpd/conf.modules.d/00-base.conf
@@ -32,13 +39,13 @@ RUN chgrp -R 0 ./ && \
     chown -R 1001:0 ./
 
 RUN chmod -R a+rwX /opt/app-root/httpd/pid && \
-    chmod +x /opt/app-root/bin/run-httpd.sh
+    chmod +x $STI_SCRIPTS_PATH/run-httpd.sh
 
 USER 1001
 
 RUN $STI_SCRIPTS_PATH/assemble
-    
-ENV APACHE_RUN_USER 1001 
-ENV APACHE_PID_FILE /opt/app-root/httpd.pid 
 
-CMD ["/opt/app-root/bin/run-httpd.sh"] 
+ENV APACHE_RUN_USER 1001
+ENV APACHE_PID_FILE /opt/app-root/httpd.pid
+
+CMD $STI_SCRIPTS_PATH/run-httpd.sh
